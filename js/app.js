@@ -25,7 +25,7 @@ function uuid() {
 }
 
 function formatMoney(n) {
-  return '¥' + Math.abs(n).toFixed(2);
+  return (n < 0 ? '-' : '') + '¥' + Math.abs(n).toFixed(2);
 }
 
 function formatDate(d) {
@@ -233,8 +233,26 @@ class App {
     const month = this.billsMonth;
     document.getElementById('bills-month').textContent = monthDisplay(month);
 
-    const txs = this.getMonthTransactions(month)
-      .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+    const txs = this.getMonthTransactions(month);
+
+    // 月度汇总
+    const income = txs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+    const expense = txs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+    document.getElementById('bills-summary').innerHTML = `
+      <div class="summary-card income">
+        <span class="summary-label">收入</span>
+        <span class="summary-value">${formatMoney(income)}</span>
+      </div>
+      <div class="summary-card expense">
+        <span class="summary-label">支出</span>
+        <span class="summary-value">${formatMoney(expense)}</span>
+      </div>
+      <div class="summary-card balance">
+        <span class="summary-label">结余</span>
+        <span class="summary-value">${formatMoney(income - expense)}</span>
+      </div>`;
+
+    txs.sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
 
     const list = document.getElementById('bills-list');
     const empty = document.getElementById('bills-empty');
@@ -274,6 +292,25 @@ class App {
   renderStats() {
     const month = this.statsMonth;
     document.getElementById('stats-month').textContent = monthDisplay(month);
+
+    // 数字摘要
+    const txs = this.getMonthTransactions(month);
+    const income = txs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+    const expense = txs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+    document.getElementById('stats-summary').innerHTML = `
+      <div class="summary-card income">
+        <span class="summary-label">收入</span>
+        <span class="summary-value">${formatMoney(income)}</span>
+      </div>
+      <div class="summary-card expense">
+        <span class="summary-label">支出</span>
+        <span class="summary-value">${formatMoney(expense)}</span>
+      </div>
+      <div class="summary-card balance">
+        <span class="summary-label">结余</span>
+        <span class="summary-value">${formatMoney(income - expense)}</span>
+      </div>`;
+
     this.renderCategoryChart(month);
     this.renderTrendChart(month);
   }
