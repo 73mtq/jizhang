@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#4A90D9">
+  <title>记账本</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body>
+  <!-- 顶部栏 -->
+  <header id="app-header">
+    <h1 id="header-title">记账本</h1>
+    <div id="sync-status" class="sync-dot offline" title="未连接"></div>
+  </header>
+
+  <!-- 主内容区 -->
+  <main id="app-main">
+    <!-- 仪表盘 -->
+    <section id="page-dashboard" class="page active">
+      <div class="month-selector">
+        <button class="month-arrow" data-action="prev-month">&lt;</button>
+        <span id="dashboard-month"></span>
+        <button class="month-arrow" data-action="next-month">&gt;</button>
+      </div>
+      <div class="summary-cards">
+        <div class="summary-card income">
+          <span class="summary-label">收入</span>
+          <span class="summary-value" id="summary-income">¥0.00</span>
+        </div>
+        <div class="summary-card expense">
+          <span class="summary-label">支出</span>
+          <span class="summary-value" id="summary-expense">¥0.00</span>
+        </div>
+        <div class="summary-card balance">
+          <span class="summary-label">结余</span>
+          <span class="summary-value" id="summary-balance">¥0.00</span>
+        </div>
+      </div>
+      <div class="section-header">
+        <h2>最近交易</h2>
+      </div>
+      <div id="recent-transactions" class="transaction-list"></div>
+      <div id="dashboard-empty" class="empty-state" style="display:none">
+        <p>还没有记录</p>
+        <p>点击下方 "记一笔" 开始记账</p>
+      </div>
+    </section>
+
+    <!-- 记一笔 -->
+    <section id="page-add" class="page">
+      <div class="type-toggle">
+        <button class="type-btn active" data-type="expense">支出</button>
+        <button class="type-btn" data-type="income">收入</button>
+      </div>
+      <div class="amount-input-wrapper">
+        <span class="currency-symbol">¥</span>
+        <input type="number" id="add-amount" placeholder="0.00" step="0.01" min="0" inputmode="decimal">
+      </div>
+      <div class="category-grid" id="add-categories"></div>
+      <div class="form-row">
+        <label>日期</label>
+        <input type="date" id="add-date">
+      </div>
+      <div class="form-row">
+        <label>备注</label>
+        <input type="text" id="add-note" placeholder="添加备注..." maxlength="50">
+      </div>
+      <button class="btn-primary" id="btn-save" data-action="save">保存</button>
+    </section>
+
+    <!-- 账单 -->
+    <section id="page-bills" class="page">
+      <div class="month-selector">
+        <button class="month-arrow" data-action="bills-prev-month">&lt;</button>
+        <span id="bills-month"></span>
+        <button class="month-arrow" data-action="bills-next-month">&gt;</button>
+      </div>
+      <div id="bills-list" class="transaction-list grouped"></div>
+      <div id="bills-empty" class="empty-state" style="display:none">
+        <p>本月没有记录</p>
+      </div>
+    </section>
+
+    <!-- 统计 -->
+    <section id="page-stats" class="page">
+      <div class="month-selector">
+        <button class="month-arrow" data-action="stats-prev-month">&lt;</button>
+        <span id="stats-month"></span>
+        <button class="month-arrow" data-action="stats-next-month">&gt;</button>
+      </div>
+      <div class="chart-container">
+        <h3>支出分类</h3>
+        <canvas id="chart-category"></canvas>
+        <div id="chart-category-empty" class="empty-state" style="display:none">
+          <p>本月没有支出记录</p>
+        </div>
+      </div>
+      <div class="chart-container">
+        <h3>收支趋势</h3>
+        <canvas id="chart-trend"></canvas>
+      </div>
+    </section>
+
+    <!-- 设置 -->
+    <section id="page-settings" class="page">
+      <div class="settings-group">
+        <h3>GitHub 同步</h3>
+        <div class="form-row">
+          <label>Personal Access Token</label>
+          <input type="password" id="set-token" placeholder="ghp_xxxxxxxxxxxx">
+          <small>需要 gist 权限，<a href="https://github.com/settings/tokens/new?scopes=gist&description=记账本" target="_blank">点击创建</a></small>
+        </div>
+        <button class="btn-primary" id="btn-connect" data-action="connect">连接</button>
+        <div id="connect-status"></div>
+      </div>
+      <div class="settings-group">
+        <h3>数据管理</h3>
+        <button class="btn-secondary" id="btn-export" data-action="export">导出数据 (JSON)</button>
+        <button class="btn-secondary" id="btn-import" data-action="import">导入数据</button>
+        <input type="file" id="import-file" accept=".json" style="display:none">
+      </div>
+      <div class="settings-group">
+        <h3>关于</h3>
+        <p class="about-text">记账本 v1.0</p>
+        <p class="about-text">数据通过 GitHub Gist 私密存储</p>
+        <p class="about-text">Gist ID: <span id="gist-id-display">未设置</span></p>
+      </div>
+    </section>
+  </main>
+
+  <!-- 底部导航 -->
+  <nav id="bottom-nav">
+    <button class="nav-item active" data-page="dashboard">
+      <span class="nav-icon">&#9750;</span>
+      <span class="nav-label">首页</span>
+    </button>
+    <button class="nav-item" data-page="bills">
+      <span class="nav-icon">&#9776;</span>
+      <span class="nav-label">账单</span>
+    </button>
+    <button class="nav-item nav-add" data-page="add">
+      <span class="nav-icon">+</span>
+    </button>
+    <button class="nav-item" data-page="stats">
+      <span class="nav-icon">&#9636;</span>
+      <span class="nav-label">统计</span>
+    </button>
+    <button class="nav-item" data-page="settings">
+      <span class="nav-icon">&#9881;</span>
+      <span class="nav-label">设置</span>
+    </button>
+  </nav>
+
+  <!-- 编辑弹窗 -->
+  <div id="modal-edit" class="modal" style="display:none">
+    <div class="modal-content">
+      <h3>编辑交易</h3>
+      <div class="type-toggle">
+        <button class="type-btn active" data-type="expense" id="edit-type-expense">支出</button>
+        <button class="type-btn" data-type="income" id="edit-type-income">收入</button>
+      </div>
+      <div class="amount-input-wrapper small">
+        <span class="currency-symbol">¥</span>
+        <input type="number" id="edit-amount" step="0.01" min="0" inputmode="decimal">
+      </div>
+      <div class="category-grid" id="edit-categories"></div>
+      <div class="form-row">
+        <label>日期</label>
+        <input type="date" id="edit-date">
+      </div>
+      <div class="form-row">
+        <label>备注</label>
+        <input type="text" id="edit-note" maxlength="50">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" data-action="modal-cancel">取消</button>
+        <button class="btn-danger" data-action="modal-delete">删除</button>
+        <button class="btn-primary" data-action="modal-save">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast 提示 -->
+  <div id="toast" class="toast"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
