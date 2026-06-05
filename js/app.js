@@ -124,6 +124,16 @@ class App {
     this.setSyncStatus(ok ? 'online' : 'offline');
   }
 
+  async manualSync() {
+    if (!storage.getToken()) {
+      toast('请先配置 GitHub Token');
+      return;
+    }
+    toast('正在同步...');
+    await this.syncToCloud();
+    toast('同步完成');
+  }
+
   scheduleSync() {
     clearTimeout(this.syncTimer);
     this.syncTimer = setTimeout(() => this.syncToCloud(), 1500);
@@ -175,6 +185,13 @@ class App {
     document.getElementById('summary-income').textContent = formatMoney(income);
     document.getElementById('summary-expense').textContent = formatMoney(expense);
     document.getElementById('summary-balance').textContent = formatMoney(income - expense);
+
+    // 计算总收支
+    const allTxs = this.data.transactions || [];
+    const totalIncome = allTxs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+    const totalExpense = allTxs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+    document.getElementById('total-income').textContent = formatMoney(totalIncome);
+    document.getElementById('total-expense').textContent = formatMoney(totalExpense);
 
     const list = document.getElementById('recent-transactions');
     const empty = document.getElementById('dashboard-empty');
@@ -653,6 +670,9 @@ class App {
           break;
         case 'import':
           document.getElementById('import-file').click();
+          break;
+        case 'sync':
+          this.manualSync();
           break;
         case 'modal-cancel':
           this.closeModal();

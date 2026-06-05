@@ -40,6 +40,16 @@
           <span class="summary-value" id="summary-balance">¥0.00</span>
         </div>
       </div>
+      <div class="total-summary">
+        <div class="total-item">
+          <span class="total-label">总支出</span>
+          <span class="total-value expense" id="total-expense">¥0.00</span>
+        </div>
+        <div class="total-item">
+          <span class="total-label">总收入</span>
+          <span class="total-value income" id="total-income">¥0.00</span>
+        </div>
+      </div>
       <div class="section-header">
         <h2>最近交易</h2>
       </div>
@@ -121,6 +131,7 @@
       </div>
       <div class="settings-group">
         <h3>数据管理</h3>
+        <button class="btn-secondary" id="btn-sync" data-action="sync">立即同步到 GitHub</button>
         <button class="btn-secondary" id="btn-export" data-action="export">导出数据 (JSON)</button>
         <button class="btn-secondary" id="btn-import" data-action="import">导入数据</button>
         <input type="file" id="import-file" accept=".json" style="display:none">

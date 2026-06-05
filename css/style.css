@@ -196,6 +196,37 @@ body {
 .summary-card.expense .summary-value { color: var(--expense); }
 .summary-card.balance .summary-value { color: var(--primary); }
 
+/* 总收支汇总 */
+.total-summary {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+  display: flex;
+  justify-content: space-around;
+}
+
+.total-item {
+  text-align: center;
+}
+
+.total-label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.total-value {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.total-value.income { color: var(--income); }
+.total-value.expense { color: var(--expense); }
+
 /* 区块标题 */
 .section-header {
   display: flex;
