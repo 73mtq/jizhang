@@ -190,8 +190,12 @@ class App {
     const allTxs = this.data.transactions || [];
     const totalIncome = allTxs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
     const totalExpense = allTxs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+    const totalBalance = totalIncome - totalExpense;
     document.getElementById('total-income').textContent = formatMoney(totalIncome);
     document.getElementById('total-expense').textContent = formatMoney(totalExpense);
+    const balanceEl = document.getElementById('total-balance');
+    balanceEl.textContent = formatMoney(totalBalance);
+    balanceEl.className = 'total-value ' + (totalBalance >= 0 ? 'income' : 'expense');
 
     const list = document.getElementById('recent-transactions');
     const empty = document.getElementById('dashboard-empty');
